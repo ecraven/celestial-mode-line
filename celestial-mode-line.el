@@ -124,7 +124,7 @@ See `celestial-mode-line-phase-representation-alist'."
             (propertize (concat
                          celestial-mode-line-prefix
                          (if (zerop days) "" (number-to-string days))
-                         (celestial-mode-phase-line-representation next-phase)
+                         (celestial-mode-line-phase-representation next-phase)
                          " "
                          (celestial-mode-line-sunrise-sunset-representation date)
                          celestial-mode-line-suffix)
