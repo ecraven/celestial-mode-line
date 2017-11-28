@@ -1,0 +1,31 @@
+* celestial-mode-line
+#+html: <p align="center"><img src="https://melpa.org/packages/celestial-mode-line-badge.svg" /></p>
+** Quick start
+Install =celestial-mode-line= from melpa.
+
+Set your coordinates, so that sunrise/sunset can be calculated correctly.
+
+#+BEGIN_SRC elisp
+(setq calendar-longitude 25.5)
+(setq calendar-latitude 17.5)
+(setq calendar-location-name "Some place")
+#+END_SRC
+
+Add =celestial-mode-line-string= to the mode line:
+
+#+BEGIN_SRC elisp
+(push 'celestial-mode-line-string global-mode-string)
+#+END_SRC
+
+Start the timer, to update every few minutes:
+
+#+BEGIN_SRC elisp
+(celestial-mode-line-start-timer)
+#+END_SRC
+
+If you don't like the default icons, just set alternatives, any unicode characters should work:
+
+#+BEGIN_SRC elisp
+(defvar celestial-mode-line-phase-representation-alist '((0 . "○") (1 . "☽") (2 . "●") (3 . "☾")))
+(defvar celestial-mode-line-sunrise-sunset-alist '((sunrise . "☀↑") (sunset . "☀↓")))
+#+END_SRC
