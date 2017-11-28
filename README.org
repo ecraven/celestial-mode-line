@@ -1,5 +1,6 @@
 * celestial-mode-line
 #+html: <p align="center"><img src="https://melpa.org/packages/celestial-mode-line-badge.svg" /></p>
+[[./celestial-mode-line][Screenshot]]
 ** Quick start
 Install =celestial-mode-line= from melpa.
 
