@@ -1,6 +1,7 @@
 * celestial-mode-line
 #+html: <p align="center"><img src="https://melpa.org/packages/celestial-mode-line-badge.svg" /></p>
-[[./celestial-mode-line.png][Screenshot]]
+
+https://github.com/ecraven/celestial-mode-line/blob/master/celestial-mode-line.png
 
 Screenshot: 5 days to full moon, sunset at 16:12.
 
