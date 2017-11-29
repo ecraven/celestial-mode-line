@@ -3,7 +3,7 @@
 ;; Copyright (C) 2017 craven@gmx.net
 
 ;; Author: Peter <craven@gmx.net>
-;; URL: https://github.com/ecraven/celestial-mode-line.el
+;; URL: https://github.com/ecraven/celestial-mode-line
 ;; Package-Version: 20171125
 ;; Package-Requires: ((emacs "24"))
 ;; Version: 0.1
@@ -44,6 +44,11 @@
 (defvar celestial-mode-line-sunrise-sunset-alist '((sunrise . "☀↑") (sunset . "☀↓")))
 
 (defvar celestial-mode-line-string "")
+
+(defgroup celestial-mode-line nil
+  "Show lunar phase and sunrise/sunset in the mode-line."
+  :group 'convenience
+  :prefix "celestial-mode-line-")
 
 (defcustom celestial-mode-line-prefix " "
   "Text to display before the lunar phase in the mode-line."
