@@ -26,10 +26,13 @@
 ;;   (setq global-mode-string '("" celestial-mode-line-string display-time-string))
 ;;   (celestial-mode-line-start-timer))
 ;; 
-;; To use different icons, use:
-;; 
+;; The default icons are:
 ;; (defvar celestial-mode-line-phase-representation-alist '((0 . "○") (1 . "☽") (2 . "●") (3 . "☾")))
 ;; (defvar celestial-mode-line-sunrise-sunset-alist '((sunrise . "☀↑") (sunset . "☀↓")))
+;;
+;; You can get text-only icons as follows:
+;; (defvar celestial-mode-line-phase-representation-alist '((0 . "( )") (1 . "|)") (2 . "(o)") (3 . "|)")))
+;; (defvar celestial-mode-line-sunrise-sunset-alist '((sunrise . "*^") (sunset . "*v")))
 ;;
 ;;; Code:
 (require 'calendar)
@@ -39,7 +42,6 @@
 (defvar celestial-mode-line-timer nil
   "Interval timer object.")
 
-;;(defvar celestial-mode-line-phase-representation-alist '((0 . "( )") (1 . "|)") (2 . "(o)") (3 . "|)")))
 (defvar celestial-mode-line-phase-representation-alist '((0 . "○") (1 . "☽") (2 . "●") (3 . "☾")))
 (defvar celestial-mode-line-sunrise-sunset-alist '((sunrise . "☀↑") (sunset . "☀↓")))
 
