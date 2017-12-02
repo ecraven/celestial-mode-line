@@ -62,7 +62,7 @@
   :type 'string
   :group 'celestial-mode-line)
 
-(defcustom celestial-mode-line-update-interval 20
+(defcustom celestial-mode-line-update-interval 60
   "*Seconds between updates of lunar phase in the mode line."
   :type 'integer
   :group 'celestial-mode-line)
