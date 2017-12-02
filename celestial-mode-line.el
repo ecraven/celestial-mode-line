@@ -157,8 +157,7 @@ See `celestial-mode-line-update-interval'."
 
 (defun celestial-mode-line-update-handler ()
   "Handle the celestial mode-line update."
-  (celestial-mode-line-update)
-  (sit-for 0))
+  (celestial-mode-line-update))
 
 (provide 'celestial-mode-line)
 ;;; celestial-mode-line.el ends here
