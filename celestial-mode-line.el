@@ -144,6 +144,7 @@ See `celestial-mode-line-phase-representation-alist'."
       (celestial-mode-line-relevant-data date)
     (concat (lunar-phase-name next-phase) " in " (number-to-string days) " day" (if (> days 1) "s" "") " on " (calendar-date-string date) " at " time)))
 
+;;;###autoload
 (defun celestial-mode-line-start-timer ()
   "Start the timer for updating the celestial mode-line data.
 
