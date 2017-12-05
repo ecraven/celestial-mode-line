@@ -70,15 +70,13 @@
 (defun celestial-mode-line--next-phase (&optional date)
   "Return the next phase of moon data after DATE or the current day."
   (let* ((d (list (or date (calendar-current-date))))
-	 (day (calendar-extract-day (car d)))
 	 (month (calendar-extract-month (car d)))
 	 (year (calendar-extract-year (car d)))
          (dummy (calendar-increment-month month year -1))
 	 (phase-list (lunar-phase-list month year))
-         (last-phase nil)
 	 (cur-phase (car phase-list)))
+    (ignore dummy)
     (while (calendar-date-compare cur-phase d)
-      (setq last-phase cur-phase)
       (setq cur-phase (car phase-list))
       (setq phase-list (cdr phase-list)))
     cur-phase))
@@ -103,6 +101,7 @@ See `celestial-mode-line-phase-representation-alist'."
   "Return the next sunrise or sunset data after DATE TIME, adding EXTRA-TIME to the duration."
   (destructuring-bind (sunrise sunset day-length)
       (solar-sunrise-sunset date)
+    (ignore day-length)
     (destructuring-bind (sec min hr . rest)
         time
       (let ((now (+ hr (/ min 60.0) (/ sec 60.0 60.0))))
@@ -120,6 +119,7 @@ See `celestial-mode-line-phase-representation-alist'."
   "Return a text representation of the next sunrise or sunset after DATE."
   (destructuring-bind (sun-type sun-time sun-until-duration)
       (celestial-mode-line--sunrise-sunset date (decode-time))
+    (ignore sun-until-duration)
     (let* ((h (truncate sun-time))
            (m (truncate (* 60 (- sun-time h)))))
       (concat (assoc-default sun-type celestial-mode-line-sunrise-sunset-alist)
@@ -130,6 +130,7 @@ See `celestial-mode-line-phase-representation-alist'."
   (let ((date (or date (calendar-current-date))))
     (destructuring-bind (next-phase days moon-date time)
         (celestial-mode-line--relevant-data date)
+      (ignore time)
       (setq celestial-mode-line-string
             (propertize (concat
                          celestial-mode-line-prefix
