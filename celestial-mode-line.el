@@ -1,14 +1,14 @@
-;;; celestial-mode-line.el --- Show lunar phase and sunrise/-set time in modeline -*-coding: utf-8 -*-
+;;; celestial-mode-line.el --- Show lunar phase and sunrise/-set time in modeline -*-coding: utf-8; lexical-binding: t; -*-
 
 ;; Copyright (C) 2017 craven@gmx.net
 
 ;; Author: Peter <craven@gmx.net>
 ;; URL: https://github.com/ecraven/celestial-mode-line
-;; Package-Version: 20171125
+;; Package-Version: 20171205
 ;; Package-Requires: ((emacs "24"))
-;; Version: 0.1
+;; Version: 0.1.1
 ;; Keywords: extensions
-;; Created: 2017-11-25
+;; Created: 2017-12-05
 
 ;;; License:
 
@@ -39,13 +39,13 @@
 (require 'lunar)
 (require 'solar)
 
-(defvar celestial-mode-line-timer nil
-  "Interval timer object.")
-
 (defvar celestial-mode-line-phase-representation-alist '((0 . "○") (1 . "☽") (2 . "●") (3 . "☾")))
 (defvar celestial-mode-line-sunrise-sunset-alist '((sunrise . "☀↑") (sunset . "☀↓")))
 
-(defvar celestial-mode-line-string "")
+(defvar celestial-mode-line-string ""
+  "Buffered mode-line string.")
+(defvar celestial-mode-line--timer nil
+  "Interval timer object.")
 
 (defgroup celestial-mode-line nil
   "Show lunar phase and sunrise/sunset in the mode-line."
@@ -67,7 +67,7 @@
   :type 'integer
   :group 'celestial-mode-line)
 
-(defun celestial-mode-line-next-phase (&optional date)
+(defun celestial-mode-line--next-phase (&optional date)
   "Return the next phase of moon data after DATE or the current day."
   (let* ((d (list (or date (calendar-current-date))))
 	 (day (calendar-extract-day (car d)))
@@ -83,10 +83,10 @@
       (setq phase-list (cdr phase-list)))
     cur-phase))
 
-(defun celestial-mode-line-relevant-data (&optional date)
+(defun celestial-mode-line--relevant-data (&optional date)
   "Return a list of (phase, days, date and time) of the next event after DATE."
   (let* ((date (or date (calendar-current-date)))
-         (next-phase (celestial-mode-line-next-phase date))
+         (next-phase (celestial-mode-line--next-phase date))
          (d (first next-phase))
          (time (second next-phase))
          (phase (third next-phase))
@@ -94,12 +94,12 @@
                   (calendar-absolute-from-gregorian date))))
     (list phase days d time)))
 
-(defun celestial-mode-line-phase-representation (phase-index)
+(defun celestial-mode-line--phase-representation (phase-index)
   "Return the representation of PHASE-INDEX.
 See `celestial-mode-line-phase-representation-alist'."
   (assoc-default phase-index celestial-mode-line-phase-representation-alist))
 
-(defun celestial-mode-line-sunrise-sunset (date time &optional extra-time)
+(defun celestial-mode-line--sunrise-sunset (date time &optional extra-time)
   "Return the next sunrise or sunset data after DATE TIME, adding EXTRA-TIME to the duration."
   (destructuring-bind (sunrise sunset day-length)
       (solar-sunrise-sunset date)
@@ -111,12 +111,15 @@ See `celestial-mode-line-phase-representation-alist'."
               ((> (car sunset) now)
                (list 'sunset (car sunset) (+ (- (car sunset) now) (or extra-time 0))))
               (t
-               (celestial-mode-line-sunrise-sunset (calendar-gregorian-from-absolute (1+ (calendar-absolute-from-gregorian date))) (list 0 0 0) (- 24 now))))))))
+               (celestial-mode-line--sunrise-sunset (calendar-gregorian-from-absolute
+                                                     (1+ (calendar-absolute-from-gregorian date)))
+                                                    (list 0 0 0)
+                                                    (- 24 now))))))))
 
-(defun celestial-mode-line-sunrise-sunset-representation (date)
+(defun celestial-mode-line--sunrise-sunset-representation (date)
   "Return a text representation of the next sunrise or sunset after DATE."
   (destructuring-bind (sun-type sun-time sun-until-duration)
-      (celestial-mode-line-sunrise-sunset date (decode-time))
+      (celestial-mode-line--sunrise-sunset date (decode-time))
     (let* ((h (truncate sun-time))
            (m (truncate (* 60 (- sun-time h)))))
       (concat (assoc-default sun-type celestial-mode-line-sunrise-sunset-alist)
@@ -126,36 +129,40 @@ See `celestial-mode-line-phase-representation-alist'."
   "Update `celestial-mode-line-string' for DATE."
   (let ((date (or date (calendar-current-date))))
     (destructuring-bind (next-phase days moon-date time)
-        (celestial-mode-line-relevant-data date)
+        (celestial-mode-line--relevant-data date)
       (setq celestial-mode-line-string
             (propertize (concat
                          celestial-mode-line-prefix
                          (if (zerop days) "" (number-to-string days))
-                         (celestial-mode-line-phase-representation next-phase)
+                         (celestial-mode-line--phase-representation next-phase)
                          " "
-                         (celestial-mode-line-sunrise-sunset-representation date)
+                         (celestial-mode-line--sunrise-sunset-representation date)
                          celestial-mode-line-suffix)
-                        'help-echo (celestial-mode-line-text-description moon-date)))
+                        'help-echo (celestial-mode-line--text-description moon-date)))
       celestial-mode-line-string)))
 
-(defun celestial-mode-line-text-description (&optional date)
+(defun celestial-mode-line--text-description (&optional date)
   "Return a text description of the current lunar phase after DATE."
   (destructuring-bind (next-phase days date time)
-      (celestial-mode-line-relevant-data date)
-    (concat (lunar-phase-name next-phase) " in " (number-to-string days) " day" (if (> days 1) "s" "") " on " (calendar-date-string date) " at " time)))
+      (celestial-mode-line--relevant-data date)
+    (concat (lunar-phase-name next-phase)
+            " in " (number-to-string days)
+            " day" (if (> days 1) "s" "")
+            " on " (calendar-date-string date)
+            " at " time)))
 
 ;;;###autoload
 (defun celestial-mode-line-start-timer ()
   "Start the timer for updating the celestial mode-line data.
 
 See `celestial-mode-line-update-interval'."
-  (when celestial-mode-line-timer
-    (cancel-timer celestial-mode-line-timer))
-  (setq celestial-mode-line-timer (run-at-time nil celestial-mode-line-update-interval
-                                          'celestial-mode-line-update-handler))
+  (when celestial-mode-line--timer
+    (cancel-timer celestial-mode-line--timer))
+  (setq celestial-mode-line--timer (run-at-time nil celestial-mode-line-update-interval
+                                          'celestial-mode-line--update-handler))
   (celestial-mode-line-update))
 
-(defun celestial-mode-line-update-handler ()
+(defun celestial-mode-line--update-handler ()
   "Handle the celestial mode-line update."
   (celestial-mode-line-update))
 
