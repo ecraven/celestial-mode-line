@@ -16,10 +16,10 @@ Set your coordinates, so that sunrise/sunset can be calculated correctly.
 (setq calendar-location-name "Some place")
 #+END_SRC
 
-Add =celestial-mode-line-string= to the mode line:
-
+Add =celestial-mode-line-string= to the mode line, for example:
 #+BEGIN_SRC elisp
-(push 'celestial-mode-line-string global-mode-string)
+;; add to end of global-mode-string
+(add-to-list 'global-mode-string 'celestial-mode-line-string t)
 #+END_SRC
 
 Start the timer, to update every few minutes:
