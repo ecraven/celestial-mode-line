@@ -19,7 +19,9 @@ Set your coordinates, so that sunrise/sunset can be calculated correctly.
 Add =celestial-mode-line-string= to the mode line, for example:
 #+BEGIN_SRC elisp
 ;; add to end of global-mode-string
-(add-to-list 'global-mode-string 'celestial-mode-line-string t)
+(if (null global-mode-string)
+    (setq global-mode-string '("" celestial-mode-line-string))
+  (add-to-list 'global-mode-string 'celestial-mode-line-string t))
 #+END_SRC
 
 Start the timer, to update every few minutes:
