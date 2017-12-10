@@ -149,8 +149,11 @@ See `celestial-mode-line-phase-representation-alist'."
   (destructuring-bind (next-phase days moon-date time)
       (celestial-mode-line--relevant-data date)
     (concat (lunar-phase-name next-phase)
-            " in " (number-to-string days)
-            " day" (if (> days 1) "s" "")
+            (if (zerop days)
+                " today"
+              (concat
+               " in " (number-to-string days)
+               " day" (if (> days 1) "s" "")))
             " on " (calendar-date-string moon-date)
             " at " time)))
 
