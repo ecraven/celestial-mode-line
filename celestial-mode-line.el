@@ -38,6 +38,7 @@
 (require 'calendar)
 (require 'lunar)
 (require 'solar)
+(require 'cl-lib)
 
 (defvar celestial-mode-line-phase-representation-alist '((0 . "○") (1 . "☽") (2 . "●") (3 . "☾")))
 (defvar celestial-mode-line-sunrise-sunset-alist '((sunrise . "☀↑") (sunset . "☀↓")))
@@ -87,9 +88,9 @@
   "Return a list of (phase, days, date and time) of the next event after DATE."
   (let* ((date (or date (calendar-current-date)))
          (next-phase (celestial-mode-line--next-phase date))
-         (d (first next-phase))
-         (time (second next-phase))
-         (phase (third next-phase))
+         (d (car next-phase))
+         (time (cadr next-phase))
+         (phase (caddr next-phase))
          (days (- (calendar-absolute-from-gregorian d)
                   (calendar-absolute-from-gregorian date))))
     (list phase days d time)))
@@ -101,10 +102,10 @@ See `celestial-mode-line-phase-representation-alist'."
 
 (defun celestial-mode-line--sunrise-sunset (date time &optional extra-time)
   "Return the next sunrise or sunset data after DATE TIME, adding EXTRA-TIME to the duration."
-  (destructuring-bind (sunrise sunset day-length)
+  (cl-destructuring-bind (sunrise sunset day-length)
       (solar-sunrise-sunset date)
     (ignore day-length)
-    (destructuring-bind (sec min hr . rest)
+    (cl-destructuring-bind (sec min hr . rest)
         time
       (let ((now (+ hr (/ min 60.0) (/ sec 60.0 60.0))))
         (cond ((> (car sunrise) now)
@@ -119,7 +120,7 @@ See `celestial-mode-line-phase-representation-alist'."
 
 (defun celestial-mode-line--sunrise-sunset-representation (date)
   "Return a text representation of the next sunrise or sunset after DATE."
-  (destructuring-bind (sun-type sun-time sun-until-duration)
+  (cl-destructuring-bind (sun-type sun-time sun-until-duration)
       (celestial-mode-line--sunrise-sunset date (decode-time))
     (ignore sun-until-duration)
     (let* ((h (truncate sun-time))
@@ -130,7 +131,7 @@ See `celestial-mode-line-phase-representation-alist'."
 (defun celestial-mode-line-update (&optional date)
   "Update `celestial-mode-line-string' for DATE."
   (let ((date (or date (calendar-current-date))))
-    (destructuring-bind (next-phase days moon-date time)
+    (cl-destructuring-bind (next-phase days moon-date time)
         (celestial-mode-line--relevant-data date)
       (ignore time)
       (setq celestial-mode-line-string
@@ -146,7 +147,7 @@ See `celestial-mode-line-phase-representation-alist'."
 
 (defun celestial-mode-line--text-description (&optional date)
   "Return a text description of the current lunar phase after DATE."
-  (destructuring-bind (next-phase days moon-date time)
+  (cl-destructuring-bind (next-phase days moon-date time)
       (celestial-mode-line--relevant-data date)
     (concat (lunar-phase-name next-phase)
             (if (zerop days)
