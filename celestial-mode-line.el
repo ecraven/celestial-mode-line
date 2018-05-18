@@ -4,9 +4,9 @@
 
 ;; Author: Peter <craven@gmx.net>
 ;; URL: https://github.com/ecraven/celestial-mode-line
-;; Package-Version: 20171207
+;; Package-Version: 20180518
 ;; Package-Requires: ((emacs "24"))
-;; Version: 0.1.1
+;; Version: 0.1.2
 ;; Keywords: extensions
 ;; Created: 2017-12-05
 
