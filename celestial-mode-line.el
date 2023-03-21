@@ -110,7 +110,9 @@ See `celestial-mode-line-phase-representation-alist'."
       (let ((now (+ hr (/ min 60.0) (/ sec 60.0 60.0))))
         (cond ((> (car sunrise) now)
                (list 'sunrise (car sunrise) (+ (- (car sunrise) now) (or extra-time 0))))
-              ((> (car sunset) now)
+              ((and
+                (not (null sunset)) ; if there is no sunset today, try tomorrow.
+                (> (car sunset) now))
                (list 'sunset (car sunset) (+ (- (car sunset) now) (or extra-time 0))))
               (t
                (celestial-mode-line--sunrise-sunset (calendar-gregorian-from-absolute
