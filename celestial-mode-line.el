@@ -29,10 +29,12 @@
 ;; The default icons are:
 ;; (defvar celestial-mode-line-phase-representation-alist '((0 . "○") (1 . "☽") (2 . "●") (3 . "☾")))
 ;; (defvar celestial-mode-line-sunrise-sunset-alist '((sunrise . "☀↑") (sunset . "☀↓")))
+;; (defvar celestial-mode-line-polar-representation "θ∼")
 ;;
 ;; You can get text-only icons as follows:
 ;; (defvar celestial-mode-line-phase-representation-alist '((0 . "( )") (1 . "|)") (2 . "(o)") (3 . "|)")))
 ;; (defvar celestial-mode-line-sunrise-sunset-alist '((sunrise . "*^") (sunset . "*v")))
+;; (defvar celestial-mode-line-polar-representation "(-)∼")
 ;;
 ;;; Code:
 (require 'calendar)
@@ -42,6 +44,7 @@
 
 (defvar celestial-mode-line-phase-representation-alist '((0 . "○") (1 . "☽") (2 . "●") (3 . "☾")))
 (defvar celestial-mode-line-sunrise-sunset-alist '((sunrise . "☀↑") (sunset . "☀↓")))
+(defvar celestial-mode-line-polar-representation "θ∼" "The symbol used at the poles when the sun neither sets nor rises")
 
 (defvar celestial-mode-line-string ""
   "Buffered mode-line string.")
@@ -108,8 +111,8 @@ See `celestial-mode-line-phase-representation-alist'."
     (cl-destructuring-bind (sec min hr . rest)
         time
       (let ((now (+ hr (/ min 60.0) (/ sec 60.0 60.0))))
-        (cond ((and (null sunrise) (null sunset))
-               (error "Neither sunrise nor sunset found, where on earth are you‽"))
+        (cond ((and (null sunrise) (null sunset)) ; if you're at the poles, this can happen.
+               (list 'polar 0 0))
               ((and
                 (not (null sunrise)) ; if there is no sunrise today, there should be a sunset.
                 (> (car sunrise) now))
@@ -131,7 +134,7 @@ See `celestial-mode-line-phase-representation-alist'."
     (ignore sun-until-duration)
     (let* ((h (truncate sun-time))
            (m (truncate (* 60 (- sun-time h)))))
-      (concat (assoc-default sun-type celestial-mode-line-sunrise-sunset-alist)
+      (concat (assoc-default sun-type celestial-mode-line-sunrise-sunset-alist 'equal celestial-mode-line-polar-representation)
               (format "%d:%02d" h m)))))
 
 (defun celestial-mode-line-update (&optional date)
