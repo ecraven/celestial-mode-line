@@ -108,7 +108,11 @@ See `celestial-mode-line-phase-representation-alist'."
     (cl-destructuring-bind (sec min hr . rest)
         time
       (let ((now (+ hr (/ min 60.0) (/ sec 60.0 60.0))))
-        (cond ((> (car sunrise) now)
+        (cond ((and (null sunrise) (null sunset))
+               (error "Neither sunrise nor sunset found, where on earth are you‽"))
+              ((and
+                (not (null sunrise)) ; if there is no sunrise today, there should be a sunset.
+                (> (car sunrise) now))
                (list 'sunrise (car sunrise) (+ (- (car sunrise) now) (or extra-time 0))))
               ((and
                 (not (null sunset)) ; if there is no sunset today, try tomorrow.
