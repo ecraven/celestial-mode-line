@@ -17,7 +17,7 @@
 ;;; Commentary:
 
 ;; Do something like the following to set this up:
-;; 
+;;
 ;; (setq calendar-longitude 25.5)
 ;; (setq calendar-latitude 17.5)
 ;; (setq calendar-location-name "Some place")
@@ -25,14 +25,16 @@
 ;;   :config
 ;;   (setq global-mode-string '("" celestial-mode-line-string display-time-string))
 ;;   (celestial-mode-line-start-timer))
-;; 
+;;
 ;; The default icons are:
 ;; (defvar celestial-mode-line-phase-representation-alist '((0 . "○") (1 . "☽") (2 . "●") (3 . "☾")))
 ;; (defvar celestial-mode-line-sunrise-sunset-alist '((sunrise . "☀↑") (sunset . "☀↓")))
+;; (defvar celestial-mode-line-polar-representation "θ∼")
 ;;
 ;; You can get text-only icons as follows:
 ;; (defvar celestial-mode-line-phase-representation-alist '((0 . "( )") (1 . "|)") (2 . "(o)") (3 . "|)")))
 ;; (defvar celestial-mode-line-sunrise-sunset-alist '((sunrise . "*^") (sunset . "*v")))
+;; (defvar celestial-mode-line-polar-representation "(-)∼")
 ;;
 ;;; Code:
 (require 'calendar)
@@ -42,6 +44,7 @@
 
 (defvar celestial-mode-line-phase-representation-alist '((0 . "○") (1 . "☽") (2 . "●") (3 . "☾")))
 (defvar celestial-mode-line-sunrise-sunset-alist '((sunrise . "☀↑") (sunset . "☀↓")))
+(defvar celestial-mode-line-polar-representation "θ∼" "The symbol used at the poles when the sun neither sets nor rises")
 
 (defvar celestial-mode-line-string ""
   "Buffered mode-line string.")
@@ -108,9 +111,15 @@ See `celestial-mode-line-phase-representation-alist'."
     (cl-destructuring-bind (sec min hr . rest)
         time
       (let ((now (+ hr (/ min 60.0) (/ sec 60.0 60.0))))
-        (cond ((> (car sunrise) now)
+        (cond ((and (null sunrise) (null sunset)) ; if you're at the poles, this can happen.
+               (list 'polar 0 0))
+              ((and
+                (not (null sunrise)) ; if there is no sunrise today, there should be a sunset.
+                (> (car sunrise) now))
                (list 'sunrise (car sunrise) (+ (- (car sunrise) now) (or extra-time 0))))
-              ((> (car sunset) now)
+              ((and
+                (not (null sunset)) ; if there is no sunset today, try tomorrow.
+                (> (car sunset) now))
                (list 'sunset (car sunset) (+ (- (car sunset) now) (or extra-time 0))))
               (t
                (celestial-mode-line--sunrise-sunset (calendar-gregorian-from-absolute
@@ -125,7 +134,7 @@ See `celestial-mode-line-phase-representation-alist'."
     (ignore sun-until-duration)
     (let* ((h (truncate sun-time))
            (m (truncate (* 60 (- sun-time h)))))
-      (concat (assoc-default sun-type celestial-mode-line-sunrise-sunset-alist)
+      (concat (assoc-default sun-type celestial-mode-line-sunrise-sunset-alist 'equal celestial-mode-line-polar-representation)
               (format "%d:%02d" h m)))))
 
 (defun celestial-mode-line-update (&optional date)
